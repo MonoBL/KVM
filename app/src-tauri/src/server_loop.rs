@@ -86,6 +86,14 @@ async fn peer_session(
         }
     }
     tracing::info!("peer {} registered ({}x{})", peer_id, screen_w, screen_h);
+    {
+        let eng = engine.lock().unwrap();
+        tracing::info!(
+            "server layout: local_id={}, screens(id,col,row,w,h)={:?}",
+            eng.local_screen_id,
+            eng.screens.iter().map(|s| (s.id, s.col, s.row, s.width, s.height)).collect::<Vec<_>>()
+        );
+    }
 
     // mpsc bridges sync grab thread -> async writer.
     let (tx, mut rx) = mpsc::channel::<Message>(512);
@@ -96,6 +104,8 @@ async fn peer_session(
         let tx_grab = tx; // moved; drop closes channel when thread exits
         let stop_grab = Arc::clone(&stop);
         std::thread::spawn(move || {
+            tracing::info!("grab loop started for peer {}", peer_id);
+            let mut tick: u64 = 0;
             run_server_grab_loop(move |ev| {
                 if stop_grab.load(Ordering::Relaxed) {
                     return false; // pass event through; we're done
@@ -103,7 +113,13 @@ async fn peer_session(
                 let outcome = {
                     let mut eng = eng_grab.lock().unwrap();
                     match ev {
-                        ServerGrabEvent::MouseAbs(x, y) => eng.on_mouse_abs(x, y),
+                        ServerGrabEvent::MouseAbs(x, y) => {
+                            tick += 1;
+                            if tick % 60 == 0 {
+                                tracing::info!("grab mouse abs=({},{}) control={:?}", x, y, eng.control);
+                            }
+                            eng.on_mouse_abs(x, y)
+                        }
                         ServerGrabEvent::Msg(msg) => {
                             let fwd = eng.forward(msg);
                             MouseOutcome {

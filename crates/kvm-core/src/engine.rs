@@ -122,9 +122,15 @@ impl EngineState {
             return out;
         };
         let Some(nb) = neighbor(&self.screens, &local, &edge) else {
+            tracing::warn!(
+                "edge {:?} hit at ({},{}) on local {}x{} but NO neighbor; screens(id,col,row)={:?}",
+                edge, x, y, local.width, local.height,
+                self.screens.iter().map(|s| (s.id, s.col, s.row)).collect::<Vec<_>>()
+            );
             return out; // edge of the world: stay local
         };
         let nb = nb.clone();
+        tracing::info!("crossing {:?} -> peer {} ({}x{})", edge, nb.id, nb.width, nb.height);
 
         // Hand control to the neighbor.
         let (ex, ey) = entry_ratio(x, y, &local, &edge);

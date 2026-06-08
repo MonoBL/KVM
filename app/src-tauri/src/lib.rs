@@ -11,6 +11,15 @@ use tauri::{
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    // Logs to the console that launched `tauri dev`. Default level info;
+    // override with RUST_LOG (e.g. RUST_LOG=kvm_core=debug,hopper=debug).
+    tracing_subscriber::fmt()
+        .with_env_filter(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| "info,kvm_core=info,hopper=info".into()),
+        )
+        .init();
+
     tauri::Builder::default()
         .manage(AppState::new())
         .setup(|app| {

@@ -262,7 +262,9 @@ pub fn code_to_enigo(code: u32) -> Option<EnigoKey> {
         0x58 => Return, // keypad enter
         // unmapped (PrintScreen, ScrollLock, Pause, NumLock, Function, Insert
         // on macOS, anything else): skip rather than inject garbage.
-        _ => return None,
+        // NOTE: `Option::None` is qualified because `use EnigoKey::*` brings
+        // `Key::None` into scope on Windows, which would shadow a bare `None`.
+        _ => return Option::None,
     };
     Some(key)
 }

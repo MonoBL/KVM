@@ -27,10 +27,36 @@
       connecting = new Set([...connecting].filter((id) => id !== peer.id));
     }
   }
+
+  // Manual connect by IP (fallback when mDNS discovery is blocked).
+  let manualHost = "";
+  let manualPort = 15900;
+  let manualState = "";
+
+  async function connectManual() {
+    if (!manualHost) return;
+    manualState = "Connecting…";
+    try {
+      await invoke("connect_to_peer", { host: manualHost, port: manualPort });
+      manualState = `Connected to ${manualHost}:${manualPort}`;
+    } catch (e: unknown) {
+      manualState = `Error: ${String(e)}`;
+    }
+  }
 </script>
 
 <section>
-  <h2>Discovered Peers</h2>
+  <h2>Connect by IP</h2>
+  <div class="manual">
+    <input class="m-host" placeholder="192.168.1.x" bind:value={manualHost} />
+    <input class="m-port" type="number" bind:value={manualPort} />
+    <button class="btn-connect" on:click={connectManual}>Connect</button>
+  </div>
+  {#if manualState}
+    <p class="manual-state">{manualState}</p>
+  {/if}
+
+  <h2 style="margin-top:18px">Discovered Peers</h2>
   {#if peers.length === 0}
     <p class="empty">No peers found. Start the engine and make sure other Hopper instances are running on the same network.</p>
   {:else}
@@ -74,6 +100,25 @@
     color: #666;
     font-size: 0.9rem;
     line-height: 1.5;
+  }
+  .manual {
+    display: flex;
+    gap: 8px;
+  }
+  .manual input {
+    background: #1e1e32;
+    color: #d0d0e8;
+    border: 1px solid #3a3a5a;
+    border-radius: 4px;
+    padding: 5px 8px;
+    font-size: 0.82rem;
+  }
+  .m-host { flex: 1; }
+  .m-port { width: 80px; }
+  .manual-state {
+    font-size: 0.78rem;
+    color: #4fc3f7;
+    margin: 8px 0 0;
   }
   .peer-list {
     list-style: none;

@@ -1,0 +1,17 @@
+# Rust
+/target
+**/target
+# Cargo.lock committed: app build reproducibility
+
+# Node
+node_modules
+app/dist
+app/.vite
+
+# Tauri build output
+app/src-tauri/target
+app/src-tauri/gen/apple
+app/src-tauri/gen/android
+
+# OS
+.DS_Store

@@ -1,0 +1,28 @@
+[package]
+name = "kvm-core"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1", features = ["derive"] }
+bincode = "1"
+mdns-sd = "0.11"
+anyhow = "1"
+tracing = "0.1"
+
+# Phase 2 - input
+enigo = "0.2"
+rdev = { version = "0.5", features = ["unstable_grab"] }
+
+# Phase 5 - clipboard
+arboard = "3"
+
+# Phase 7 - TLS
+rustls = { version = "0.23", features = ["ring"] }
+rcgen = "0.12"
+tokio-rustls = "0.26"
+rustls-pemfile = "2"
+
+[dev-dependencies]
+tempfile = "3"

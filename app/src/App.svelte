@@ -19,10 +19,10 @@
     port: number;
   }
 
-  let status: StatusDto = { role: "server", control: "local", running: false };
-  let peers: PeerDto[] = [];
-  let activeTab: "peers" | "layout" | "permissions" = "peers";
-  let roleSelect = "server";
+  let status = $state<StatusDto>({ role: "server", control: "local", running: false });
+  let peers = $state<PeerDto[]>([]);
+  let activeTab = $state<"peers" | "layout" | "permissions">("peers");
+  let roleSelect = $state("server");
 
   async function refresh() {
     status = await invoke<StatusDto>("get_status");

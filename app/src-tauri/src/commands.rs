@@ -263,19 +263,29 @@ fn primary_display_height() -> u32 {
 }
 
 #[cfg(target_os = "macos")]
+mod macos_perms {
+    #[link(name = "ApplicationServices", kind = "framework")]
+    extern "C" {
+        fn AXIsProcessTrusted() -> bool;
+    }
+    #[link(name = "CoreGraphics", kind = "framework")]
+    extern "C" {
+        fn CGPreflightListenEventAccess() -> bool;
+    }
+    pub fn accessibility() -> bool {
+        unsafe { AXIsProcessTrusted() }
+    }
+    pub fn input_monitoring() -> bool {
+        unsafe { CGPreflightListenEventAccess() }
+    }
+}
+
+#[cfg(target_os = "macos")]
 fn macos_accessibility_trusted() -> bool {
-    // AXIsProcessTrusted via system call
-    let output = std::process::Command::new("osascript")
-        .arg("-e")
-        .arg("tell application \"System Events\" to return true")
-        .output();
-    // A simpler heuristic: try reading from /dev/input — not available on macOS.
-    // Real check via AXIsProcessTrusted requires Objective-C FFI.
-    // For now return false to always prompt in dev builds.
-    false
+    macos_perms::accessibility()
 }
 
 #[cfg(target_os = "macos")]
 fn macos_input_monitoring_trusted() -> bool {
-    false
+    macos_perms::input_monitoring()
 }

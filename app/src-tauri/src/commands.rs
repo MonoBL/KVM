@@ -209,7 +209,9 @@ pub fn start_engine(app: AppHandle, state: State<AppState>) -> Result<(), String
     // Server loop: accept KVM clients.
     let eng = Arc::clone(&state.engine);
     let stop = Arc::clone(&state.loop_stop);
-    tokio::spawn(async move {
+    // Use Tauri's async runtime: a plain tokio::spawn panics here because the
+    // command runs outside any Tokio reactor.
+    tauri::async_runtime::spawn(async move {
         crate::server_loop::run_server(eng, stop).await;
     });
 
@@ -235,7 +237,7 @@ pub fn connect_to_peer(
     let stop = Arc::clone(&state.loop_stop);
     let screen_w = primary_display_width();
     let screen_h = primary_display_height();
-    tokio::spawn(async move {
+    tauri::async_runtime::spawn(async move {
         crate::client_loop::run_client(host, port, screen_w, screen_h, stop).await;
     });
     Ok(())
